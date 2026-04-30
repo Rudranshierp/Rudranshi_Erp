@@ -1,0 +1,1 @@
+web: gunicorn rudranshi_erp.wsgi
