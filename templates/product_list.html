@@ -1,0 +1,19 @@
+<h2>Products</h2>
+
+<a href="/create-product/">+ Add Product</a>
+
+<table border="1">
+<tr>
+    <th>Name</th>
+    <th>Price</th>
+    <th>GST</th>
+</tr>
+
+{% for p in products %}
+<tr>
+    <td>{{ p.name }}</td>
+    <td>{{ p.price }}</td>
+    <td>{{ p.gst_percent }}</td>
+</tr>
+{% endfor %}
+</table>

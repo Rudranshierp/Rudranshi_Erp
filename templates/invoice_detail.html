@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Invoice Detail</h2>
+
+<p><b>Invoice No:</b> {{ invoice.invoice_number }}</p>
+<p><b>Date:</b> {{ invoice.created_at }}</p>
+
+<h3>Items</h3>
+
+<table border="1" width="100%">
+<tr>
+    <th>Product</th>
+    <th>Qty</th>
+    <th>Price</th>
+    <th>GST %</th>
+</tr>
+
+{% for item in invoice.items.all %}
+<tr>
+    <td>{{ item.product_name }}</td>
+    <td>{{ item.quantity }}</td>
+    <td>{{ item.price }}</td>
+    <td>{{ item.gst_percent }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<h3>Total: ₹ {{ invoice.final_amount }}</h3>
+
+{% endblock %}

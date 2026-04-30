@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Invoice</title>
+
+    <style>
+        body { font-family: Arial; padding: 20px; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        button {
+            padding: 8px 12px;
+            margin-top: 10px;
+        }
+
+        .summary {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+
+    <script>
+        // 🔥 PRODUCT AUTO FILL
+        function setProductDetails(select) {
+            let selected = select.options[select.selectedIndex];
+
+            let price = selected.getAttribute("data-price");
+            let gst = selected.getAttribute("data-gst");
+
+            let row = select.parentElement.parentElement;
+
+            row.querySelector('[name="price[]"]').value = price || 0;
+            row.querySelector('[name="gst[]"]').value = gst || 0;
+
+            calculateTotal();
+        }
+
+        // 🔥 ADD ROW
+        function addRow() {
+            let table = document.getElementById("items");
+            let row = table.insertRow();
+
+            row.innerHTML = `
+                <td>
+                    <select name="product[]" onchange="setProductDetails(this)" required>
+                        <option value="">Select Product</option>
+                        {% for p in products %}
+                            <option value="{{ p.name }}" data-price="{{ p.price }}" data-gst="{{ p.gst_percent }}">
+                                {{ p.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td><input name="quantity[]" type="number" oninput="calculateTotal()" required></td>
+                <td><input name="price[]" type="number" oninput="calculateTotal()" required></td>
+                <td><input name="gst[]" type="number" oninput="calculateTotal()" required></td>
+            `;
+        }
+
+        // 🔥 TOTAL CALCULATION
+        function calculateTotal() {
+            let qtys = document.getElementsByName("quantity[]");
+            let prices = document.getElementsByName("price[]");
+            let gsts = document.getElementsByName("gst[]");
+
+            let total = 0;
+            let gst_total = 0;
+
+            for (let i = 0; i < qtys.length; i++) {
+                let qty = parseFloat(qtys[i].value) || 0;
+                let price = parseFloat(prices[i].value) || 0;
+                let gst = parseFloat(gsts[i].value) || 0;
+
+                let row_total = qty * price;
+                let row_gst = (row_total * gst) / 100;
+
+                total += row_total;
+                gst_total += row_gst;
+            }
+
+            document.getElementById("total").innerText = total.toFixed(2);
+            document.getElementById("gst_total").innerText = gst_total.toFixed(2);
+            document.getElementById("final_total").innerText = (total + gst_total).toFixed(2);
+        }
+    </script>
+</head>
+
+<body>
+
+<h2>Create Invoice</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <!-- 🔥 COMPANY SELECT -->
+    <label>Select Company:</label>
+    <select name="company_id" required>
+        {% for company in companies %}
+            <option value="{{ company.id }}">{{ company.name }}</option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+
+    <!-- 🔥 ITEMS TABLE -->
+    <table id="items">
+        <tr>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>GST %</th>
+        </tr>
+
+        <tr>
+            <td>
+                <select name="product[]" onchange="setProductDetails(this)" required>
+                    <option value="">Select Product</option>
+                    {% for p in products %}
+                        <option value="{{ p.name }}" data-price="{{ p.price }}" data-gst="{{ p.gst_percent }}">
+                            {{ p.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td><input name="quantity[]" type="number" oninput="calculateTotal()" required></td>
+            <td><input name="price[]" type="number" oninput="calculateTotal()" required></td>
+            <td><input name="gst[]" type="number" oninput="calculateTotal()" required></td>
+        </tr>
+    </table>
+
+    <!-- 🔥 ADD BUTTON -->
+    <button type="button" onclick="addRow()">+ Add Item</button>
+
+    <!-- 🔥 TOTAL BOX -->
+    <div class="summary">
+        <b>Total: ₹ <span id="total">0</span></b><br>
+        <b>GST: ₹ <span id="gst_total">0</span></b><br>
+        <b>Final: ₹ <span id="final_total">0</span></b>
+    </div>
+
+    <br>
+    <button type="submit">Save Invoice</button>
+</form>
+
+</body>
+</html>

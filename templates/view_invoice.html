@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Invoice</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background: #0c4b33; color: white; }
+    </style>
+</head>
+
+<body>
+
+<h2>Invoice Detail</h2>
+
+<p><b>Invoice No:</b> {{ invoice.invoice_number }}</p>
+<p><b>Date:</b> {{ invoice.created_at }}</p>
+
+<table>
+    <tr>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Price</th>
+        <th>GST %</th>
+    </tr>
+
+    {% for item in invoice.items.all %}
+    <tr>
+        <td>{{ item.product_name }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>{{ item.price }}</td>
+        <td>{{ item.gst_percent }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+
+<h3>Total: ₹ {{ invoice.total_amount }}</h3>
+<h3>GST: ₹ {{ invoice.gst_amount }}</h3>
+<h2>Final: ₹ {{ invoice.final_amount }}</h2>
+
+</body>
+</html>

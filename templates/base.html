@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RUDRANSHI_ERP</title>
+
+    <style>
+        body { margin:0; font-family: Arial; }
+
+        .layout { display: flex; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            height: 100vh;
+            background: #0c4b33;
+            color: white;
+            padding: 15px;
+        }
+
+        .sidebar h2 {
+            margin-bottom: 20px;
+        }
+
+        .sidebar h4 {
+            margin-top: 15px;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #1abc9c;
+            padding-bottom: 5px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            margin: 5px 0;
+            background: #145a32;
+            border-radius: 4px;
+        }
+
+        .sidebar a:hover {
+            background: #1abc9c;
+        }
+
+        /* Main */
+        .main {
+            flex: 1;
+            background: #f4f6f7;
+        }
+
+        .topbar {
+            background: white;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background: #0c4b33;
+            color: white;
+        }
+
+        .card-box {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 15px;
+            width: 200px;
+            border: 1px solid #ddd;
+        }
+
+        .badge {
+            background: red;
+            padding: 5px 10px;
+            color: white;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <!-- 🔥 SIDEBAR -->
+    <div class="sidebar">
+        <h2>RUDRANSHI_ERP</h2>
+
+        <!-- DASHBOARD -->
+        <a href="/dashboard/">Dashboard</a>
+
+        <!-- SALES -->
+        <h4>Sales</h4>
+        <a href="/create-invoice/">Create Invoice</a>
+
+        <!-- MASTERS -->
+        <h4>Masters</h4>
+        <a href="/customers/">Customers</a>
+        <a href="/products/">Products</a>
+
+        <!-- SUBSCRIPTION -->
+        <h4>Subscription</h4>
+        <a href="/pricing/">Pricing / Plans</a>
+
+        <!-- LOGOUT -->
+        <a href="/logout/">Logout</a>
+    </div>
+
+    <!-- 🔥 MAIN -->
+    <div class="main">
+
+        <div class="topbar">
+            <div>
+                Welcome, {{ company.name }}
+            </div>
+
+            <div>
+                {% if not is_active %}
+                    <span class="badge">No Active Plan</span>
+                {% else %}
+                    <span style="color:green;">Active Plan</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
