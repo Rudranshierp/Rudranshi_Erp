@@ -16,6 +16,8 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 from .models import Invoice, InvoiceItem, Company, UserCompanyRole, Product, Customer, ProductCategory
+from django.db.models import Sum
+from django.db.models.functions import TruncMonth
 from .serializers import InvoiceSerializer
 
 
@@ -50,12 +52,47 @@ def dashboard_page(request):
     if not request.user.is_authenticated:
         return redirect('/')
 
+    # 🔥 GET COMPANY
+    company = Company.objects.filter(user=request.user).first()
+
+    # 🔥 BASE QUERY
     invoices = Invoice.objects.all().order_by('-id')
 
+    # 🔥 DATE FILTER (NEW)
+    start = request.GET.get('start')
+    end = request.GET.get('end')
+
+    if start and end:
+        invoices = invoices.filter(created_at__date__range=[start, end])
+
+    # 🔥 SUMMARY
     total_invoices = invoices.count()
-    total_amount = sum(i.total_amount for i in invoices)
-    total_gst = sum(i.gst_amount for i in invoices)
-    company = Company.objects.filter(user=request.user).first()
+    total_amount = invoices.aggregate(total=Sum('total_amount'))['total'] or 0
+    total_gst = invoices.aggregate(total=Sum('gst_amount'))['total'] or 0
+
+    # 🔥 MONTHLY SALES (CHART DATA)
+    monthly = (
+        invoices.annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .annotate(total=Sum('total_amount'))
+        .order_by('month')
+    )
+
+    labels = []
+    data = []
+
+    for m in monthly:
+        labels.append(m['month'].strftime('%b'))
+        data.append(float(m['total'] or 0))
+
+    # 🔥 PIE DATA (PAYMENT TYPE DEMO SAFE)
+    pie_data = [40, 30, 30]  # later real payment logic laga sakte ho
+
+    # 🔥 RECENT ACTIVITY (NEW)
+    activities = invoices[:5]
+
+    # 🔥 ACTIVE CUSTOMERS (SAFE)
+    active_customers = Customer.objects.filter(company=company).count() if company else 0
 
     context = {
         'total_invoices': total_invoices,
@@ -63,6 +100,13 @@ def dashboard_page(request):
         'total_gst': total_gst,
         'invoices': invoices,
         'company': company,
+
+        # 🔥 NEW ADDITIONS
+        'labels': labels,
+        'data': data,
+        'pie_data': pie_data,
+        'activities': activities,
+        'active_customers': active_customers,
     }
 
     return render(request, 'dashboard.html', context)
