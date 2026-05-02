@@ -8,8 +8,8 @@
 <h2 class="fw-bold">Dashboard</h2>
 <h5 class="text-muted">Company: {{ company.name }}</h5>
 
-<!-- 🔥 SUBSCRIPTION ALERT -->
-{% if not request.user.usersubscription.is_active %}
+<!-- 🔥 SUBSCRIPTION ALERT (FIXED) -->
+{% if not sub_active %}
 <div class="alert alert-danger d-flex justify-content-between align-items-center">
     <div>❌ Your subscription is inactive.</div>
     <a href="/pricing/" class="btn btn-sm btn-primary">Upgrade Now</a>
@@ -51,10 +51,33 @@
 
 <!-- 🔥 QUICK ACTION -->
 <div class="mb-4">
-    <a href="/customers/" class="btn btn-primary me-2">Customers</a>
-    <a href="/products/" class="btn btn-warning me-2">Products</a>
-    <a href="/create-invoice/" class="btn btn-success me-2">+ Create Invoice</a>
-    <a href="/pricing/" class="btn btn-dark">Subscription / Pricing</a>
+
+    <!-- Customers -->
+    <a href="/customers/" class="btn btn-primary me-2">
+        Customers
+    </a>
+
+    <!-- Products -->
+    <a href="/products/" class="btn btn-warning me-2">
+        Products
+    </a>
+
+    <!-- Create Invoice (LOCKED IF SUB EXPIRED) -->
+    {% if sub_active %}
+    <a href="/create-invoice/" class="btn btn-success me-2">
+        + Create Invoice
+    </a>
+    {% else %}
+    <a href="#" class="btn btn-success me-2 disabled" tabindex="-1" aria-disabled="true">
+        + Create Invoice (Locked)
+    </a>
+    {% endif %}
+
+    <!-- Pricing -->
+    <a href="/pricing/" class="btn btn-dark">
+        Subscription / Pricing
+    </a>
+
 </div>
 
 <!-- 🔥 CHART + PIE -->

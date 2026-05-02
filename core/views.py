@@ -1,3 +1,4 @@
+from .utils import check_subscription
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 
@@ -49,8 +50,8 @@ def logout_page(request):
 
 
 def dashboard_page(request):
-    if not request.user.is_authenticated:
-        return redirect('/')
+    if not check_subscription(request.user):
+        return Response({"error": "Subscription expired"}, status=403)
 
     # 🔥 GET COMPANY
     company = Company.objects.filter(user=request.user).first()
@@ -113,8 +114,8 @@ def dashboard_page(request):
 
 
 def create_invoice_page(request):
-    if not request.user.is_authenticated:
-        return redirect('/')
+    if not check_subscription(request.user):
+        return Response({"error": "Subscription expired"}, status=403)
 
     # 🔥 GET DATA (for form)
     products = Product.objects.all()
@@ -168,12 +169,7 @@ def subscribe(request, plan_id, billing_type):
 
     plan = SubscriptionPlan.objects.get(id=plan_id)
 
-    if billing_type == "monthly":
-        days = 30
-    elif billing_type == "half_yearly":
-        days = 180
-    else:
-        days = 365
+    days = 30 if billing_type == "monthly" else 180 if billing_type == "half_yearly" else 365
 
     end_date = date.today() + timedelta(days=days)
 
@@ -188,11 +184,10 @@ def subscribe(request, plan_id, billing_type):
     )
 
     return redirect('/dashboard/')
-
     
 def view_invoice_page(request, id):
-    if not request.user.is_authenticated:
-        return redirect('/')
+    if not check_subscription(request.user):
+        return Response({"error": "Subscription expired"}, status=403)
 
     try:
         invoice = Invoice.objects.get(id=id)
@@ -226,6 +221,9 @@ def get_user_role(request):
 # ================= CREATE =================
 
 def create_invoice(request):
+    if not check_subscription(request.user):
+        return Response({"error": "Subscription expired"}, status=403)
+
     company = get_company(request)
     role = get_user_role(request)
 
@@ -247,6 +245,9 @@ def create_invoice(request):
 # ================= LIST =================
 
 def get_invoices(request):
+    if not check_subscription(request.user):
+        return Response({"error": "Subscription expired"}, status=403)
+
     company = get_company(request)
 
     if not company:
@@ -279,6 +280,9 @@ def get_invoices(request):
 # ================= GET ONE =================
 
 def get_invoice(request, id):
+    if not check_subscription(request.user):
+        return Response({"error": "Subscription expired"}, status=403)
+
     company = get_company(request)
 
     if not company:
@@ -296,6 +300,9 @@ def get_invoice(request, id):
 # ================= UPDATE =================
 
 def update_invoice(request, id):
+    if not check_subscription(request.user):
+        return Response({"error": "Subscription expired"}, status=403)
+
     company = get_company(request)
     role = get_user_role(request)
 
@@ -322,6 +329,9 @@ def update_invoice(request, id):
 # ================= DELETE =================
 
 def delete_invoice(request, id):
+    if not check_subscription(request.user):
+        return Response({"error": "Subscription expired"}, status=403)
+
     company = get_company(request)
     role = get_user_role(request)
 
@@ -343,8 +353,8 @@ def delete_invoice(request, id):
 # ================= PDF =================
 
 def download_invoice_pdf(request, id):
-    if not request.user.is_authenticated:
-        return redirect('/')
+    if not check_subscription(request.user):
+        return Response({"error": "Subscription expired"}, status=403)
 
     import os
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
@@ -498,8 +508,8 @@ def download_invoice_pdf(request, id):
     # ================= PRODUCT =================
 
 def product_list(request):
-    if not request.user.is_authenticated:
-        return redirect('/')
+    if not check_subscription(request.user):
+        return Response({"error": "Subscription expired"}, status=403)
 
     company = get_company(request)
     products = Product.objects.filter(company=company)
@@ -510,8 +520,8 @@ def product_list(request):
 
 
 def create_product(request):
-    if not request.user.is_authenticated:
-        return redirect('/')
+    if not check_subscription(request.user):
+        return Response({"error": "Subscription expired"}, status=403)
 
     company = get_company(request)
 
@@ -533,8 +543,8 @@ def create_product(request):
 
 
 def customer_list(request):
-    if not request.user.is_authenticated:
-        return redirect('/')
+    if not check_subscription(request.user):
+        return Response({"error": "Subscription expired"}, status=403)
 
     company = get_company(request)
     customers = Customer.objects.filter(company=company)
@@ -545,8 +555,8 @@ def customer_list(request):
 
 
 def create_customer(request):
-    if not request.user.is_authenticated:
-        return redirect('/')
+    if not check_subscription(request.user):
+        return Response({"error": "Subscription expired"}, status=403)
 
     company = get_company(request)
 
@@ -564,8 +574,8 @@ def create_customer(request):
 
 
 def create_purchase(request):
-    if not request.user.is_authenticated:
-        return redirect('/')
+    if not check_subscription(request.user):
+        return Response({"error": "Subscription expired"}, status=403)
 
     company = get_company(request)
 
