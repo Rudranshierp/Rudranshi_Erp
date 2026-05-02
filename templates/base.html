@@ -22,6 +22,7 @@
             color: white;
             padding: 15px;
             position: fixed;
+            overflow-y: auto; /* 🔥 NEW */
         }
 
         .sidebar h2 {
@@ -155,6 +156,16 @@
             font-weight: 500;
         }
 
+        /* 🔥 NEW: Responsive */
+        @media(max-width: 768px){
+            .sidebar {
+                width: 200px;
+            }
+            .main {
+                margin-left: 200px;
+            }
+        }
+
     </style>
 </head>
 
@@ -167,23 +178,41 @@
         <h2>RUDRANSHI ERP</h2>
 
         <!-- DASHBOARD -->
-        <a href="/dashboard/" class="active"><i class="fa fa-home"></i> Dashboard</a>
+        <a href="/dashboard/" class="{% if request.path == '/dashboard/' %}active{% endif %}">
+            <i class="fa fa-home"></i> Dashboard
+        </a>
 
         <!-- SALES -->
         <h4>Sales</h4>
-        <a href="/create-invoice/"><i class="fa fa-file-invoice"></i> Create Invoice</a>
+        <a href="/create-invoice/" class="{% if request.path == '/create-invoice/' %}active{% endif %}">
+            <i class="fa fa-file-invoice"></i> Create Invoice
+        </a>
+
+        <!-- 🔥 NEW PURCHASE -->
+        <h4>Purchase</h4>
+        <a href="/purchase/" class="{% if request.path == '/purchase/' %}active{% endif %}">
+            <i class="fa fa-shopping-cart"></i> Purchase Entry
+        </a>
 
         <!-- MASTERS -->
         <h4>Masters</h4>
-        <a href="/customers/"><i class="fa fa-users"></i> Customers</a>
-        <a href="/products/"><i class="fa fa-box"></i> Products</a>
+        <a href="/customers/" class="{% if request.path == '/customers/' %}active{% endif %}">
+            <i class="fa fa-users"></i> Customers
+        </a>
+        <a href="/products/" class="{% if request.path == '/products/' %}active{% endif %}">
+            <i class="fa fa-box"></i> Products
+        </a>
 
         <!-- SUBSCRIPTION -->
         <h4>Subscription</h4>
-        <a href="/pricing/"><i class="fa fa-credit-card"></i> Pricing / Plans</a>
+        <a href="/pricing/" class="{% if request.path == '/pricing/' %}active{% endif %}">
+            <i class="fa fa-credit-card"></i> Pricing / Plans
+        </a>
 
         <!-- LOGOUT -->
-        <a href="/logout/"><i class="fa fa-sign-out-alt"></i> Logout</a>
+        <a href="/logout/">
+            <i class="fa fa-sign-out-alt"></i> Logout
+        </a>
     </div>
 
     <!-- 🔥 MAIN -->
@@ -196,7 +225,7 @@
             </div>
 
             <div>
-                {% if not is_active %}
+                {% if not request.user.usersubscription.is_active %}
                     <span class="badge">No Active Plan</span>
                 {% else %}
                     <span class="active-badge">Active Plan</span>
