@@ -116,36 +116,52 @@ def create_invoice_page(request):
     if not request.user.is_authenticated:
         return redirect('/')
 
+    # 🔥 GET DATA (for form)
+    products = Product.objects.all()
+    companies = Company.objects.all()
+
     if request.method == 'POST':
-        products = request.POST.getlist('product[]')
+
+        product_list = request.POST.getlist('product[]')
         quantities = request.POST.getlist('quantity[]')
         prices = request.POST.getlist('price[]')
         gsts = request.POST.getlist('gst[]')
 
-        company_id = request.post.get('company_id')
-        company = company.objects.get(id=company_id)
+        # 🔥 FIXED (POST capital)
+        company_id = request.POST.get('company_id')
 
-        if not company:
+        try:
+            company = Company.objects.get(id=company_id)
+        except Company.DoesNotExist:
             return redirect('/dashboard/')
 
+        # 🔥 CREATE INVOICE
         invoice = Invoice.objects.create(
             company=company,
             description="Multi item invoice"
         )
 
-        for i in range(len(products)):
-            InvoiceItem.objects.create(
-                invoice=invoice,
-                product_name=products[i],
-                quantity=int(quantities[i]),
-                price=float(prices[i]),
-                gst_percent=float(gsts[i])
-            )
+        # 🔥 ITEMS LOOP
+        for i in range(len(product_list)):
+            try:
+                InvoiceItem.objects.create(
+                    invoice=invoice,
+                    product_name=product_list[i],
+                    quantity=int(quantities[i]),
+                    price=float(prices[i]),
+                    gst_percent=float(gsts[i])
+                )
+            except:
+                pass  # crash avoid
 
         invoice.save()
+
         return redirect('/dashboard/')
 
-    return render(request, 'create_invoice.html')
+    return render(request, 'create_invoice.html', {
+        'products': products,
+        'companies': companies
+    })
 
 
 def subscribe(request, plan_id, billing_type):
