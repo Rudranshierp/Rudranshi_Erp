@@ -173,5 +173,57 @@ class Customer(models.Model):
         return self.name
 
 
+def create_invoice_page(request):
+    if not request.user.is_authenticated:
+        return redirect('/')
+
+    # 🔥 GET DATA (for form)
+    products = Product.objects.all()
+    companies = Company.objects.all()
+
+    if request.method == 'POST':
+
+        product_list = request.POST.getlist('product[]')
+        quantities = request.POST.getlist('quantity[]')
+        prices = request.POST.getlist('price[]')
+        gsts = request.POST.getlist('gst[]')
+
+        # 🔥 FIXED (POST capital)
+        company_id = request.POST.get('company_id')
+
+        try:
+            company = Company.objects.get(id=company_id)
+        except Company.DoesNotExist:
+            return redirect('/dashboard/')
+
+        # 🔥 CREATE INVOICE
+        invoice = Invoice.objects.create(
+            company=company,
+            description="Multi item invoice"
+        )
+
+        # 🔥 ITEMS LOOP
+        for i in range(len(product_list)):
+            try:
+                InvoiceItem.objects.create(
+                    invoice=invoice,
+                    product_name=product_list[i],
+                    quantity=int(quantities[i]),
+                    price=float(prices[i]),
+                    gst_percent=float(gsts[i])
+                )
+            except:
+                pass  # crash avoid
+
+        invoice.save()
+
+        return redirect('/dashboard/')
+
+    return render(request, 'create_invoice.html', {
+        'products': products,
+        'companies': companies
+    })
+
+
 # ================= FUTURE ERP EXTENSION =================
 # Customer, Product, Reports, Inventory यहाँ add होंगे

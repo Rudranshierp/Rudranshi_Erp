@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from core.views import product_list, create_invoice
-from core.views import customer_list, create_customer
+from core.views import customer_list, create_customer, create_purchase
 
 
 from core.views import (
@@ -40,4 +40,5 @@ urlpatterns = [
 
     path('customers/', customer_list),
     path('create-customer/', create_customer),
+    path('purchase/', create_purchase),
 ]

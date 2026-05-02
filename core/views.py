@@ -561,3 +561,51 @@ def create_customer(request):
         return redirect('/customers/')
 
     return render(request, 'create_customer.html')
+
+
+def create_purchase(request):
+    if not request.user.is_authenticated:
+        return redirect('/')
+
+    company = get_company(request)
+
+    if request.method == 'POST':
+        products = request.POST.getlist('product[]')
+        quantities = request.POST.getlist('quantity[]')
+        prices = request.POST.getlist('price[]')
+
+        purchase = Purchase.objects.create(
+            company=company,
+            supplier_name=request.POST.get('supplier')
+        )
+
+        total = 0
+
+        for i in range(len(products)):
+            product = Product.objects.get(id=products[i])
+            qty = int(quantities[i])
+            price = float(prices[i])
+
+            PurchaseItem.objects.create(
+                purchase=purchase,
+                product=product,
+                quantity=qty,
+                price=price
+            )
+
+            # 🔥 STOCK INCREASE
+            product.stock += qty
+            product.save()
+
+            total += qty * price
+
+        purchase.total_amount = total
+        purchase.save()
+
+        return redirect('/dashboard/')
+
+    products = Product.objects.filter(company=company)
+
+    return render(request, 'create_purchase.html', {
+        'products': products
+    })

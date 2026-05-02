@@ -1,0 +1,30 @@
+<h2>Create Purchase</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+    Supplier:
+    <input type="text" name="supplier" required>
+
+    <table>
+        <tr>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Price</th>
+        </tr>
+
+        <tr>
+            <td>
+                <select name="product[]">
+                    {% for p in products %}
+                        <option value="{{ p.id }}">{{ p.name }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td><input name="quantity[]" type="number"></td>
+            <td><input name="price[]" type="number"></td>
+        </tr>
+    </table>
+
+    <button type="submit">Save Purchase</button>
+</form>
