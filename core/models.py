@@ -1,5 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
+
+# 🔥 IMPORTANT (views imports for your function)
+from django.shortcuts import render, redirect
 
 
 # ================= SUBSCRIPTION PLAN =================
@@ -10,6 +14,8 @@ class SubscriptionPlan(models.Model):
     yearly_price = models.FloatField()
     max_companies = models.IntegerField()
     max_users = models.IntegerField()
+
+    created_at = models.DateTimeField(auto_now_add=True)  # 🔥 added
 
     def __str__(self):
         return self.name
@@ -31,6 +37,9 @@ class UserSubscription(models.Model):
     end_date = models.DateField()
     is_active = models.BooleanField(default=False)
 
+    def is_expired(self):
+        return self.end_date < timezone.now().date()  # 🔥 added
+
     def __str__(self):
         return f"{self.user.username} - {self.plan.name}"
 
@@ -51,6 +60,50 @@ class Company(models.Model):
     address = models.TextField(blank=True, null=True)
     industry = models.ForeignKey(Industry, on_delete=models.SET_NULL, null=True, blank=True)
 
+    created_at = models.DateTimeField(auto_now_add=True)  # 🔥 added
+
+    def __str__(self):
+        return self.name
+
+
+# ================= PRODUCT CATEGORY =================
+class ProductCategory(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+
+    created_at = models.DateTimeField(auto_now_add=True)  # 🔥 added
+
+    def __str__(self):
+        return self.name
+
+
+# ================= PRODUCT =================
+class Product(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    category = models.ForeignKey(ProductCategory, on_delete=models.SET_NULL, null=True, blank=True)
+
+    name = models.CharField(max_length=200)
+    price = models.FloatField()
+    gst_percent = models.FloatField(default=0)
+
+    stock = models.IntegerField(default=0)  # 🔥 added
+
+    created_at = models.DateTimeField(auto_now_add=True)  # 🔥 added
+
+    def __str__(self):
+        return self.name
+
+
+# ================= CUSTOMER =================
+class Customer(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)  # 🔥 added
+
     def __str__(self):
         return self.name
 
@@ -58,6 +111,8 @@ class Company(models.Model):
 # ================= INVOICE =================
 class Invoice(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True)  # 🔥 added
+
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -109,6 +164,9 @@ class Invoice(models.Model):
 # ================= INVOICE ITEMS =================
 class InvoiceItem(models.Model):
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name="items")
+
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)  # 🔥 added
+
     product_name = models.CharField(max_length=255)
     quantity = models.IntegerField()
     price = models.FloatField()
@@ -140,46 +198,14 @@ class UserCompanyRole(models.Model):
         return f"{self.user.username} - {self.company.name} - {self.role}"
 
 
-# ================= PRODUCT CATEGORY =================
-class ProductCategory(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
-
-# ================= PRODUCT =================
-class Product(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    category = models.ForeignKey(ProductCategory, on_delete=models.SET_NULL, null=True, blank=True)
-
-    name = models.CharField(max_length=200)
-    price = models.FloatField()
-    gst_percent = models.FloatField(default=0)
-
-    def __str__(self):
-        return self.name
-
-
-class Customer(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
-    phone = models.CharField(max_length=20, blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
-    address = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return self.name
-
-
+# ================= CREATE INVOICE VIEW (UNCHANGED BUT FIXED 🔥) =================
 def create_invoice_page(request):
     if not request.user.is_authenticated:
         return redirect('/')
 
-    # 🔥 GET DATA (for form)
-    products = Product.objects.all()
-    companies = Company.objects.all()
+    # 🔥 SaaS SECURITY FIX
+    products = Product.objects.filter(company__user=request.user)
+    companies = Company.objects.filter(user=request.user)
 
     if request.method == 'POST':
 
@@ -188,21 +214,18 @@ def create_invoice_page(request):
         prices = request.POST.getlist('price[]')
         gsts = request.POST.getlist('gst[]')
 
-        # 🔥 FIXED (POST capital)
         company_id = request.POST.get('company_id')
 
         try:
-            company = Company.objects.get(id=company_id)
+            company = Company.objects.get(id=company_id, user=request.user)
         except Company.DoesNotExist:
             return redirect('/dashboard/')
 
-        # 🔥 CREATE INVOICE
         invoice = Invoice.objects.create(
             company=company,
             description="Multi item invoice"
         )
 
-        # 🔥 ITEMS LOOP
         for i in range(len(product_list)):
             try:
                 InvoiceItem.objects.create(
@@ -213,7 +236,7 @@ def create_invoice_page(request):
                     gst_percent=float(gsts[i])
                 )
             except:
-                pass  # crash avoid
+                pass
 
         invoice.save()
 
