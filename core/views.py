@@ -94,6 +94,12 @@ def dashboard_page(request):
 
     # 🔥 ACTIVE CUSTOMERS (SAFE)
     active_customers = Customer.objects.filter(company=company).count() if company else 0
+    sub = UserSubscription.objects.filter(user=request.user).first()
+
+    sub_active = False
+
+    if sub and sub.is_active and sub.end_date >= date.today():
+        sub_active = True
 
     context = {
         'total_invoices': total_invoices,
@@ -108,6 +114,7 @@ def dashboard_page(request):
         'pie_data': pie_data,
         'activities': activities,
         'active_customers': active_customers,
+        'sub_active': sub_active,
     }
 
     return render(request, 'dashboard.html', context)
