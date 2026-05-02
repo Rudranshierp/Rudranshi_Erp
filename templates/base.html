@@ -221,7 +221,7 @@
             </div>
 
             <div>
-                {% if not request.user.usersubscription.is_active %}
+                {% if sub_active %}
                     <span class="badge">No Active Plan</span>
                 {% else %}
                     <span class="active-badge">Active Plan</span>
@@ -280,7 +280,7 @@ let open = false;
 function toggleSettings(){
     let panel = document.getElementById("settingsPanel");
 
-    if(open){
+    if(panel.style.left ===n"0px"){
         panel.style.left = "-320px";
         open = false;
     } else {
