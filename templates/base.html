@@ -12,7 +12,66 @@
     <style>
         body { margin:0; font-family: 'Segoe UI', sans-serif; }
 
-        .layout { display: flex; }
+        .layout { display:flex; }
+
+        /* ⚙️ SETTINGS BUTTON */
+        .settings-btn {
+            position:absolute;
+            top:15px;
+            right:20px;
+            z-index:1000;
+        }
+
+        .settings-btn button {
+            background:#fff;
+            border:none;
+            padding:8px 12px;
+            border-radius:5px;
+            cursor:pointer;
+        }
+
+        /* SETTINGS PANEL */
+        #settingsPanel {
+            position:fixed;
+            top:0;
+            left:-320px;
+            width:280px;
+            height:100%;
+            background:#0f172a;
+            color:white;
+            transition:0.3s;
+            z-index:999;
+            padding:15px;
+            overflow-y:auto;
+        }
+
+        .menu-title {
+            margin-top:15px;
+            font-size:11px;
+            color:#94a3b8;
+            text-transform:uppercase;
+            letter-spacing:1px;
+        }
+
+        .menu {
+            display:block;
+            padding:10px;
+            margin:5px 0;
+            color:#cbd5e1;
+            text-decoration:none;
+            border-radius:6px;
+            transition:0.3s;
+        }
+
+        .menu i {
+            margin-right:10px;
+        }
+
+        .menu:hover {
+            background:#12294a;
+            color:white;
+            transform:translateX(5px);
+        }
 
         /* Sidebar */
         .sidebar {
@@ -22,7 +81,7 @@
             color: white;
             padding: 15px;
             position: fixed;
-            overflow-y: auto; /* 🔥 NEW */
+            overflow-y: auto;
         }
 
         .sidebar h2 {
@@ -58,7 +117,6 @@
             transform: translateX(5px);
         }
 
-        /* Active Menu */
         .sidebar a.active {
             background: #1e3a8a;
             color: #fff;
@@ -82,38 +140,8 @@
             align-items: center;
         }
 
-        .topbar strong {
-            color: #0b1a2f;
-        }
-
-        /* Content */
         .content {
             padding: 20px;
-        }
-
-        /* Table */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0px 2px 10px rgba(0,0,0,0.05);
-        }
-
-        th, td {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            text-align: center;
-        }
-
-        th {
-            background: #0b1a2f;
-            color: white;
-        }
-
-        tr:hover {
-            background: #f1f5f9;
         }
 
         /* Cards */
@@ -130,14 +158,8 @@
             border-radius: 12px;
             box-shadow: 0px 4px 12px rgba(0,0,0,0.08);
             border: none;
-            transition: 0.3s;
         }
 
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        /* Badge */
         .badge {
             background: red;
             padding: 6px 12px;
@@ -150,75 +172,49 @@
             font-weight: bold;
         }
 
-        /* Buttons */
-        .btn {
-            border-radius: 6px;
-            font-weight: 500;
-        }
-
-        /* 🔥 NEW: Responsive */
         @media(max-width: 768px){
-            .sidebar {
-                width: 200px;
-            }
-            .main {
-                margin-left: 200px;
-            }
+            .sidebar { width:200px; }
+            .main { margin-left:200px; }
         }
-
     </style>
 </head>
 
 <body>
 
+<!-- ⚙️ BUTTON -->
+<div class="settings-btn">
+    <button onclick="toggleSettings()">⚙️</button>
+</div>
+
 <div class="layout">
 
-    <!-- 🔥 SIDEBAR -->
+    <!-- SIDEBAR -->
     <div class="sidebar">
         <h2>RUDRANSHI ERP</h2>
 
-        <!-- DASHBOARD -->
         <a href="/dashboard/" class="{% if request.path == '/dashboard/' %}active{% endif %}">
             <i class="fa fa-home"></i> Dashboard
         </a>
 
-        <!-- SALES -->
         <h4>Sales</h4>
-        <a href="/create-invoice/" class="{% if request.path == '/create-invoice/' %}active{% endif %}">
-            <i class="fa fa-file-invoice"></i> Create Invoice
-        </a>
+        <a href="/create-invoice/"><i class="fa fa-file-invoice"></i> Create Invoice</a>
 
-        <!-- 🔥 NEW PURCHASE -->
         <h4>Purchase</h4>
-        <a href="/purchase/" class="{% if request.path == '/purchase/' %}active{% endif %}">
-            <i class="fa fa-shopping-cart"></i> Purchase Entry
-        </a>
+        <a href="/purchase/"><i class="fa fa-shopping-cart"></i> Purchase Entry</a>
 
-        <!-- MASTERS -->
         <h4>Masters</h4>
-        <a href="/customers/" class="{% if request.path == '/customers/' %}active{% endif %}">
-            <i class="fa fa-users"></i> Customers
-        </a>
-        <a href="/products/" class="{% if request.path == '/products/' %}active{% endif %}">
-            <i class="fa fa-box"></i> Products
-        </a>
+        <a href="/customers/"><i class="fa fa-users"></i> Customers</a>
+        <a href="/products/"><i class="fa fa-box"></i> Products</a>
 
-        <!-- SUBSCRIPTION -->
         <h4>Subscription</h4>
-        <a href="/pricing/" class="{% if request.path == '/pricing/' %}active{% endif %}">
-            <i class="fa fa-credit-card"></i> Pricing / Plans
-        </a>
+        <a href="/pricing/"><i class="fa fa-credit-card"></i> Pricing / Plans</a>
 
-        <!-- LOGOUT -->
-        <a href="/logout/">
-            <i class="fa fa-sign-out-alt"></i> Logout
-        </a>
+        <a href="/logout/"><i class="fa fa-sign-out-alt"></i> Logout</a>
     </div>
 
-    <!-- 🔥 MAIN -->
+    <!-- MAIN -->
     <div class="main">
 
-        <!-- TOPBAR -->
         <div class="topbar">
             <div>
                 Welcome, <strong>{{ company.name }}</strong>
@@ -233,7 +229,6 @@
             </div>
         </div>
 
-        <!-- CONTENT -->
         <div class="content">
             {% block content %}{% endblock %}
         </div>
@@ -241,6 +236,59 @@
     </div>
 
 </div>
+
+<!-- ⚙️ SETTINGS PANEL -->
+<div id="settingsPanel">
+
+<h4>⚙️ Settings</h4>
+<hr>
+
+<div class="menu-title">Company</div>
+<a href="/companies/" class="menu"><i class="fa fa-building"></i> Company Profile</a>
+
+<div class="menu-title">HRMS</div>
+<a class="menu"><i class="fa fa-users"></i> Employees</a>
+
+<div class="menu-title">Branch</div>
+<a class="menu"><i class="fa fa-map-marker-alt"></i> Branch / Franchise</a>
+
+<div class="menu-title">User</div>
+<a class="menu"><i class="fa fa-user-cog"></i> User & Roles</a>
+
+<div class="menu-title">Finance</div>
+<a class="menu"><i class="fa fa-coins"></i> Currencies</a>
+<a class="menu"><i class="fa fa-exchange-alt"></i> Currency Exchange</a>
+
+<div class="menu-title">Pricing</div>
+<a href="/pricing/" class="menu"><i class="fa fa-tags"></i> Pricing Setting</a>
+
+<div class="menu-title">Tax</div>
+<a class="menu"><i class="fa fa-percentage"></i> Tax Setting</a>
+
+<hr>
+
+<a href="/admin/" class="menu">
+    <i class="fa fa-lock"></i> Admin Panel
+</a>
+
+</div>
+
+<!-- JS -->
+<script>
+let open = false;
+
+function toggleSettings(){
+    let panel = document.getElementById("settingsPanel");
+
+    if(open){
+        panel.style.left = "-320px";
+        open = false;
+    } else {
+        panel.style.left = "0px";
+        open = true;
+    }
+}
+</script>
 
 </body>
 </html>
